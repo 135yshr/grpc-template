@@ -1,0 +1,37 @@
+version: "3.8"
+volumes:
+  db-store:
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./build/docker/app/Dockerfile
+    ports:
+      - target: 9000
+        published: ${APP_PORT:-9000}
+        protocol: tcp
+        mode: host
+    stdin_open: true
+    tty: true
+
+  db:
+    build:
+      context: ..
+      dockerfile: ./build/docker/mysql/Dockerfile
+    restart: always
+    ports:
+      - target: 3306
+        published: ${DB_PORT:-3306}
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: volume
+        source: db-store
+        target: /var/lib/mysql
+        volume:
+          nocopy: true
+    environment:
+      - MYSQL_DATABASE=${DB_NAME:-helloworld}
+      - MYSQL_USER=${DB_USER:-user}
+      - MYSQL_PASSWORD=${DB_PASS:-secret}
+      - MYSQL_ROOT_PASSWORD=${DB_PASS:-secret}
